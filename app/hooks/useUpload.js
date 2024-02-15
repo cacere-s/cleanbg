@@ -1,3 +1,4 @@
+'use client'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useDrop } from './useDrop'
@@ -5,14 +6,18 @@ import { IMAGE_STATUS } from '../const'
 import { upload } from '../lib/uploadCloud'
 
 export function useUpload () {
-  const { setStatus, setOriginal } = useDrop()
+  const { setStatus, setOriginal, setModified } = useDrop()
+
   const onDrop = useCallback(async acceptedFiles => {
     setStatus(IMAGE_STATUS.UPLOADING)
     if (acceptedFiles[0] === undefined) return setStatus(IMAGE_STATUS.ERROR)
 
     const { error, data } = await upload({ image: acceptedFiles[0] })
     if (error) return setStatus(IMAGE_STATUS.ERROR)
-    setOriginal(data)
+
+    setOriginal(data.withBackground)
+    setModified(data.withoutBackground)
+    setTimeout(() => setStatus(IMAGE_STATUS.DONE), 3000)
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
